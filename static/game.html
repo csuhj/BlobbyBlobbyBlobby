@@ -11,7 +11,21 @@
 </head>
 <body>
 <canvas id="myCanvas" width="600" height="400"></canvas>
+<p>Current Mouse position = <span id="mousePosition"/></p>
 <script>
+    var host = location.origin.replace(/^http/, 'ws')
+    var ws = new WebSocket(host);
+    var wsOpen = false;
+    ws.onmessage = function (event) {
+        document.querySelector('#mousePosition').innerHTML = JSON.parse(event.data);
+    };
+    ws.onopen = function (event) {
+        wsOpen = true;
+    };
+    ws.onclose =function (event) {
+        wsOpen = false;
+    };
+
     var canvas = document.getElementById('myCanvas');
     var context = canvas.getContext('2d');
     var centerX = canvas.width / 2;
@@ -89,6 +103,10 @@
             viewPortCenterY += 1;
         } else if ((mouseY < centerY - 5) && (viewPortCenterY > centerY)) {
             viewPortCenterY -= 1;
+        }
+
+        if (wsOpen) {
+            ws.send(viewPortCenterX + ', ' + viewPortCenterY);
         }
     }
 
