@@ -1,8 +1,11 @@
 var host = location.origin.replace(/^http/, 'ws')
 var ws = new WebSocket(host);
 var wsOpen = false;
+
+var gameState = null;
+
 ws.onmessage = function (event) {
-    document.querySelector('#mousePosition').innerHTML = JSON.parse(event.data);
+    gameState = JSON.parse(event.data);
 };
 ws.onopen = function (event) {
     wsOpen = true;
@@ -19,26 +22,6 @@ var centerY = canvas.height / 2;
 var backgroundPatternWidth = 20;
 var backgroundPatternHeight = 20;
 var backgroundPattern = createBackgroundPattern();
-
-var mouseX;
-var mouseY;
-
-var worldWidth = 1000;
-var worldHeight = 1000;
-
-var viewPortCenterX = worldWidth/2;
-var viewPortCenterY = worldHeight/2;
-
-var Blob = function(x, y, radius, colour) {
-    this.x = x;
-    this.y = y;
-    this.radius = radius;
-    this.colour = colour;
-};
-
-var blobs = [];
-blobs.push(new Blob(400, 400, 5, 'red'));
-blobs.push(new Blob(380, 600, 2, 'blue'));
 
 window.requestAnimFrame = (function(callback) {
     return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame ||
@@ -57,54 +40,43 @@ function getMousePos(canvas, evt) {
 
 canvas.addEventListener('mousemove', function(evt) {
     var mousePos = getMousePos(canvas, evt);
-    mouseX = mousePos.x;
-    mouseY = mousePos.y;
+
+    var deltaFromCentre = {
+        x: mousePos.x - centerX,
+        y: mousePos.y - centerY,
+    }
+
+    if (wsOpen) {
+        ws.send(JSON.stringify(deltaFromCentre));
+    }
 }, false);
 
 function animate() {
-    moveViewPort();
-
     context.clearRect(0, 0, canvas.width, canvas.height);
 
-    drawBackground();
-    for (var i=0; i<blobs.length; i++) {
-        drawBlob(blobs[i]);
+    if (gameState != null) {
+        drawBackground(gameState.myBlobby);
+        for (var i = 0; i < gameState.blobbies.length; i++) {
+            drawBlobby(gameState.myBlobby, gameState.blobbies[i]);
+        }
+        drawBlobby(gameState.myBlobby, gameState.myBlobby);
     }
-    drawBlob(new Blob(viewPortCenterX, viewPortCenterY, 15, 'green'));
 
     requestAnimFrame(function() {
         animate();
     });
 }
 
-function moveViewPort() {
-    if ((mouseX > centerX + 5) && (viewPortCenterX < (worldWidth - centerX))) {
-        viewPortCenterX += 1;
-    } else if ((mouseX < centerX - 5) && (viewPortCenterX > centerX)) {
-        viewPortCenterX -= 1;
-    }
+function drawBlobby(myBlobby, blobby) {
+    var viewPortLeft = myBlobby.x - centerX;
+    var viewPortTop = myBlobby.y - centerY;
 
-    if ((mouseY > centerY + 5) && (viewPortCenterY < (worldHeight - centerY))) {
-        viewPortCenterY += 1;
-    } else if ((mouseY < centerY - 5) && (viewPortCenterY > centerY)) {
-        viewPortCenterY -= 1;
-    }
-
-    if (wsOpen) {
-        ws.send(viewPortCenterX + ', ' + viewPortCenterY);
-    }
-}
-
-function drawBlob(blob) {
-    var viewPortLeft = viewPortCenterX - centerX;
-    var viewPortTop = viewPortCenterY - centerY;
-
-    var offsetX = blob.x - viewPortLeft;
-    var offsetY = blob.y - viewPortTop;
+    var offsetX = blobby.x - viewPortLeft;
+    var offsetY = blobby.y - viewPortTop;
 
     context.beginPath();
-    context.arc(offsetX, offsetY, blob.radius, 0, 2 * Math.PI, false);
-    context.fillStyle = blob.colour;
+    context.arc(offsetX, offsetY, blobby.radius, 0, 2 * Math.PI, false);
+    context.fillStyle = blobby.colour;
     context.fill();
     context.lineWidth = 1;
     context.strokeStyle = 'black';
@@ -125,9 +97,9 @@ function createBackgroundPattern() {
     return context.createPattern(canvasPattern,"repeat");
 }
 
-function drawBackground() {
-    var viewPortLeft = viewPortCenterX - centerX;
-    var viewPortTop = viewPortCenterY - centerY;
+function drawBackground(myBlobby) {
+    var viewPortLeft = myBlobby.x - centerX;
+    var viewPortTop = myBlobby.y - centerY;
 
     var offsetX = viewPortLeft % backgroundPatternWidth;
     var offsetY = viewPortTop % backgroundPatternHeight;

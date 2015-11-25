@@ -1,6 +1,7 @@
 var express = require("express");
 var bodyParser = require("body-parser");
 var comms = require("./comms");
+var gameEngine = require("./gameEngine");
 
 var http = require("http");
 
@@ -14,4 +15,4 @@ server.listen(8080, function() {
     console.log("server listening on", 8080);
 });
 
-new comms(server);
+new gameEngine(new comms(server));
