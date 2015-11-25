@@ -10,9 +10,14 @@ app.use(bodyParser.json());
 
 app.use("/", require("./static"));
 
+var portNumber = process.env.BLOBBY3_PORT;
+if (portNumber == undefined) {
+    portNumber = 8080;
+}
+
 var server = http.createServer(app);
-server.listen(8080, function() {
-    console.log("server listening on", 8080);
+server.listen(portNumber, function() {
+    console.log("server listening on", portNumber);
 });
 
 var engine = new gameEngine();
