@@ -10,10 +10,7 @@ app.use(bodyParser.json());
 
 app.use("/", require("./static"));
 
-var portNumber = process.env.BLOBBY3_PORT;
-if (portNumber == undefined) {
-    portNumber = 8080;
-}
+var portNumber = (process.env.PORT || 8080);
 
 var server = http.createServer(app);
 server.listen(portNumber, function() {
