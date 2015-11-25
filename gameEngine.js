@@ -4,7 +4,8 @@ var EventEmitter = require('events').EventEmitter;
 var worldWidth = 1000;
 var worldHeight = 1000;
 
-function Blobby(x, y, radius, colour) {
+function Blobby(id, x, y, radius, colour) {
+    this.id = id;
     this.x = x;
     this.y = y;
     this.radius = radius;
@@ -15,24 +16,20 @@ function GameEngine() {
 
     EventEmitter.call(this);
 
-    var mousePos = {
-        x: 0,
-        y: 0
-    };
+    var mousePoses = [];
 
     var gameState = {
-        blobbies: [],
-        myBlobby: new Blobby(500, 500, 15, 'green')
+        blobbies: []
     };
 
-    gameState.blobbies.push(new Blobby(20, 20, 5, 'yellow'));
-    gameState.blobbies.push(new Blobby(400, 400, 5, 'red'));
-    gameState.blobbies.push(new Blobby(380, 600, 2, 'blue'));
+    gameState.blobbies.push(new Blobby(-1, 20, 20, 5, 'yellow'));
+    gameState.blobbies.push(new Blobby(-1, 400, 400, 5, 'red'));
+    gameState.blobbies.push(new Blobby(-1, 380, 600, 2, 'blue'));
 
     var started = false;
 
-    this.updateMousePos = function(newMousePos) {
-        mousePos = newMousePos;
+    this.updateMousePos = function(newMousePos, id) {
+        mousePoses[id] = newMousePos;
     };
 
     this.ensureStarted = function() {
@@ -44,8 +41,37 @@ function GameEngine() {
         }
     };
 
+    this.addBlobby = function(id) {
+        gameState.blobbies.push(new Blobby(id, 500, 500, 15, 'green'));
+    };
+
+    this.removeBlobby = function(id) {
+        for (var i = gameState.blobbies.length - 1; i >= 0; i--) {
+            if (gameState.blobbies[i].id === id) {
+                gameState.blobbies.splice(i, 1);
+                return;
+            }
+        }
+    };
+
+    this.createMyState = function(id) {
+        var gameStateForId = {
+            blobbies: [],
+            myBlobby: null
+        }
+
+        for (var i = 0; i < gameState.blobbies.length; i++) {
+            if (gameState.blobbies[i].id === id) {
+                gameStateForId.myBlobby = gameState.blobbies[i];
+            } else {
+                gameStateForId.blobbies.push(gameState.blobbies[i]);
+            }
+        }
+        return gameStateForId;
+    }
+
     this.gameLoop = function() {
-        updateMyBlobby(mousePos, gameState.myBlobby);
+        updateBlobbies();
         this.emit("gameStateUpdated", gameState);
 
         var self = this;
@@ -54,7 +80,16 @@ function GameEngine() {
         }, 1000/60);
     };
 
-    function updateMyBlobby(mousePos, blobby) {
+    function updateBlobbies() {
+        for (var i = 0; i < gameState.blobbies.length; i++) {
+            var mousePos = mousePoses[gameState.blobbies[i].id];
+            if (mousePos != undefined) {
+                updateBlobby(mousePos, gameState.blobbies[i]);
+            }
+        }
+    }
+
+    function updateBlobby(mousePos, blobby) {
         if ((mousePos.x > 5) && (blobby.x < worldWidth)) {
             blobby.x += 1;
         } else if ((mousePos.x < -5) && (blobby.x > 0)) {
