@@ -15,4 +15,5 @@ server.listen(8080, function() {
     console.log("server listening on", 8080);
 });
 
-new gameEngine(new comms(server));
+var engine = new gameEngine();
+new comms(server, engine);

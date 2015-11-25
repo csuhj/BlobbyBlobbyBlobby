@@ -1,14 +1,19 @@
-var Blobby = function(x, y, radius, colour) {
+var util = require('util');
+var EventEmitter = require('events').EventEmitter;
+
+var worldWidth = 1000;
+var worldHeight = 1000;
+
+function Blobby(x, y, radius, colour) {
     this.x = x;
     this.y = y;
     this.radius = radius;
     this.colour = colour;
 };
 
-var worldWidth = 1000;
-var worldHeight = 1000;
+function GameEngine() {
 
-module.exports = function gameEngine(comms) {
+    EventEmitter.call(this);
 
     var mousePos = {
         x: 0,
@@ -24,18 +29,30 @@ module.exports = function gameEngine(comms) {
     gameState.blobbies.push(new Blobby(400, 400, 5, 'red'));
     gameState.blobbies.push(new Blobby(380, 600, 2, 'blue'));
 
-    comms.onMousePosChanged(function(newMousePos){
+    var started = false;
+
+    this.updateMousePos = function(newMousePos) {
         mousePos = newMousePos;
-    });
+    };
 
-    function gameLoop() {
+    this.ensureStarted = function() {
+        if (!started) {
+            console.log("Starting game engine");
+
+            started = true;
+            this.gameLoop();
+        }
+    };
+
+    this.gameLoop = function() {
         updateMyBlobby(mousePos, gameState.myBlobby);
-        comms.sendState(gameState);
+        this.emit("gameStateUpdated", gameState);
 
+        var self = this;
         setTimeout(function() {
-            gameLoop()
+            self.gameLoop();
         }, 1000/60);
-    }
+    };
 
     function updateMyBlobby(mousePos, blobby) {
         if ((mousePos.x > 5) && (blobby.x < worldWidth)) {
@@ -50,6 +67,8 @@ module.exports = function gameEngine(comms) {
             blobby.y -= 1;
         }
     }
+}
 
-    gameLoop();
-};
+util.inherits(GameEngine, EventEmitter);
+
+module.exports = GameEngine;

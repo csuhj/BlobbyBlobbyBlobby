@@ -1,38 +1,27 @@
 var WebSocketServer = require("ws").Server;
 
-module.exports = function comms(server) {
+module.exports = function Comms(server, engine) {
 
     var mousePosChangedFunc = null;
     var wss = new WebSocketServer({server: server});
-    var socket = null;
 
     wss.on("connection", function (ws) {
-        socket = ws;
-
         console.log("websocket connection open");
+        engine.ensureStarted();
+
+        engine.on("gameStateUpdated", function (state) {
+            ws.send(JSON.stringify(state), function () {
+            });
+        });
 
         ws.on("close", function () {
-            socket = null;
             console.log("websocket connection close");
         });
 
         ws.on('message', function incoming(message) {
             var mousePos = JSON.parse(message);
 
-            if (mousePosChangedFunc != null) {
-                mousePosChangedFunc(mousePos);
-            }
+            engine.updateMousePos(mousePos);
         });
     });
-
-    this.onMousePosChanged = function(callback) {
-        mousePosChangedFunc = callback;
-    };
-
-    this.sendState = function(gameState) {
-        if (socket != null) {
-            socket.send(JSON.stringify(gameState), function () {
-            });
-        }
-    }
 }
