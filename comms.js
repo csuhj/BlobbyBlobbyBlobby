@@ -3,7 +3,6 @@ var WebSocketServer = require("ws").Server;
 module.exports = function Comms(server, engine) {
 
     var nextConnectionId = 0;
-    var mousePosChangedFunc = null;
     var wss = new WebSocketServer({server: server});
 
     wss.on("connection", function (ws) {
@@ -13,7 +12,7 @@ module.exports = function Comms(server, engine) {
 
         engine.addBlobby(ws.id);
 
-        engine.on("gameStateUpdated", function (state) {
+        engine.on("gameStateUpdated", function () {
             myState = engine.createMyState(ws.id);
 
             ws.send(JSON.stringify(myState), function () {
@@ -31,4 +30,4 @@ module.exports = function Comms(server, engine) {
             engine.updateMousePos(mousePos, ws.id);
         });
     });
-}
+};

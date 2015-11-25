@@ -10,7 +10,7 @@ function Blobby(id, x, y, radius, colour) {
     this.y = y;
     this.radius = radius;
     this.colour = colour;
-};
+}
 
 function GameEngine() {
 
@@ -58,7 +58,7 @@ function GameEngine() {
         var gameStateForId = {
             blobbies: [],
             myBlobby: null
-        }
+        };
 
         for (var i = 0; i < gameState.blobbies.length; i++) {
             if (gameState.blobbies[i].id === id) {
@@ -68,7 +68,7 @@ function GameEngine() {
             }
         }
         return gameStateForId;
-    }
+    };
 
     this.gameLoop = function() {
         updateBlobbies();

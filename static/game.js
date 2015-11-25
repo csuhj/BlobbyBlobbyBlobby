@@ -1,4 +1,4 @@
-var host = location.origin.replace(/^http/, 'ws')
+var host = location.origin.replace(/^http/, 'ws');
 var ws = new WebSocket(host);
 var wsOpen = false;
 
@@ -7,10 +7,10 @@ var gameState = null;
 ws.onmessage = function (event) {
     gameState = JSON.parse(event.data);
 };
-ws.onopen = function (event) {
+ws.onopen = function () {
     wsOpen = true;
 };
-ws.onclose =function (event) {
+ws.onclose =function () {
     wsOpen = false;
 };
 
@@ -43,8 +43,8 @@ canvas.addEventListener('mousemove', function(evt) {
 
     var deltaFromCentre = {
         x: mousePos.x - centerX,
-        y: mousePos.y - centerY,
-    }
+        y: mousePos.y - centerY
+    };
 
     if (wsOpen) {
         ws.send(JSON.stringify(deltaFromCentre));
