@@ -4,12 +4,16 @@ var EventEmitter = require('events').EventEmitter;
 var worldWidth = 1000;
 var worldHeight = 1000;
 
-function Blobby(id, x, y, radius, colour) {
+function Blobby(id, x, y, size, colour) {
     this.id = id;
     this.x = x;
     this.y = y;
-    this.radius = radius;
+    this.size = size;
     this.colour = colour;
+
+    this.getSpeed = function() {
+        return size / 5;
+    };
 }
 
 function GameEngine() {
@@ -90,17 +94,46 @@ function GameEngine() {
     }
 
     function updateBlobby(mousePos, blobby) {
+        var unitVector = calculateUnitVectorFromOrigin(mousePos);
+
+        var speed = blobby.getSpeed();
+        var vector = {
+            x: unitVector.x * speed,
+            y: unitVector.y * speed
+        };
+
         if ((mousePos.x > 5) && (blobby.x < worldWidth)) {
-            blobby.x += 1;
+            blobby.x += vector.x;
         } else if ((mousePos.x < -5) && (blobby.x > 0)) {
-            blobby.x -= 1;
+            blobby.x += vector.x;
         }
 
         if ((mousePos.y > 5) && (blobby.y < worldHeight)) {
-            blobby.y += 1;
+            blobby.y += vector.y;
         } else if ((mousePos.y < -5) && (blobby.y > 0)) {
-            blobby.y -= 1;
+            blobby.y += vector.y;
         }
+    }
+
+    function calculateUnitVectorFromOrigin(point) {
+        return calculateUnitVector({
+            x: 0,
+            y: 0
+        }, point);
+    }
+
+    function calculateUnitVector(pointA, pointB) {
+        var vector = {
+            x: pointB.x - pointA.x,
+            y: pointB.y - pointA.y
+        };
+
+        var magnitude = Math.sqrt((vector.x * vector.x) + (vector.y * vector.y));
+
+        return {
+            x: vector.x / magnitude,
+            y: vector.y / magnitude
+        };
     }
 }
 

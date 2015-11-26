@@ -75,7 +75,7 @@ function drawBlobby(myBlobby, blobby) {
     var offsetY = blobby.y - viewPortTop;
 
     context.beginPath();
-    context.arc(offsetX, offsetY, blobby.radius, 0, 2 * Math.PI, false);
+    context.arc(offsetX, offsetY, blobby.size, 0, 2 * Math.PI, false);
     context.fillStyle = blobby.colour;
     context.fill();
     context.lineWidth = 1;
