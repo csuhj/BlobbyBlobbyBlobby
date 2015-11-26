@@ -6,9 +6,8 @@ module.exports = function Comms(server, engine) {
     var wss = new WebSocketServer({server: server});
 
     wss.on("connection", function (ws) {
-        ws.id = "b"+(nextConnectionId++);
+        ws.id = "player "+(nextConnectionId++);
         console.log("websocket connection "+ws.id+" open");
-        engine.ensureStarted();
 
         engine.addBlobby(ws.id);
 

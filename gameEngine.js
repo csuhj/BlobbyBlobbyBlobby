@@ -3,6 +3,7 @@ var EventEmitter = require('events').EventEmitter;
 
 var worldWidth = 1000;
 var worldHeight = 1000;
+var minimumSizeDifferenceForEating = 3;
 
 function Blobby(id, x, y, size, colour) {
     this.id = id;
@@ -12,7 +13,33 @@ function Blobby(id, x, y, size, colour) {
     this.colour = colour;
 
     this.getSpeed = function() {
-        return size / 5;
+        return Math.max((30 - this.size) / 5, 1);
+    };
+
+    this.getArea = function() {
+        return Math.PI * (this.size * this.size);
+    };
+
+
+    this.overlaps = function(blobby) {
+        var vector = {
+            x: blobby.x - this.x,
+            y: blobby.y - this.y
+        };
+
+        var magnitude = Math.abs(calculateVectorMagnitude(vector));
+        return magnitude < this.size + blobby.size;
+    };
+
+    this.isPlayer = function() {
+        return id != "food";
+    };
+
+    this.increaseSize = function(blobby) {
+        var area = this.getArea();
+        var blobbyArea = blobby.getArea();
+
+        this.size = Math.sqrt((blobbyArea + area) / Math.PI);
     };
 }
 
@@ -26,35 +53,33 @@ function GameEngine() {
         blobbies: []
     };
 
-    gameState.blobbies.push(new Blobby(-1, 20, 20, 5, 'yellow'));
-    gameState.blobbies.push(new Blobby(-1, 400, 400, 5, 'red'));
-    gameState.blobbies.push(new Blobby(-1, 380, 600, 2, 'blue'));
-
-    var started = false;
+    var running = false;
+    var timeOfLastFood = new Date();
 
     this.updateMousePos = function(newMousePos, id) {
         mousePoses[id] = newMousePos;
     };
 
-    this.ensureStarted = function() {
-        if (!started) {
-            console.log("Starting game engine");
-
-            started = true;
-            this.gameLoop();
-        }
-    };
-
     this.addBlobby = function(id) {
+        this.ensureStarted();
         gameState.blobbies.push(new Blobby(id, 500, 500, 15, 'green'));
     };
 
     this.removeBlobby = function(id) {
+        var numberOfPlayers = 0;
+
         for (var i = gameState.blobbies.length - 1; i >= 0; i--) {
             if (gameState.blobbies[i].id === id) {
                 gameState.blobbies.splice(i, 1);
-                return;
+            } else {
+                if (gameState.blobbies[i].isPlayer()) {
+                    numberOfPlayers++;
+                }
             }
+        }
+
+        if (numberOfPlayers == 0) {
+            stop();
         }
     };
 
@@ -76,19 +101,72 @@ function GameEngine() {
 
     this.gameLoop = function() {
         updateBlobbies();
+        if ((new Date() - timeOfLastFood) > 5000) {
+            addFoods(3);
+        }
+
         this.emit("gameStateUpdated", gameState);
 
         var self = this;
         setTimeout(function() {
-            self.gameLoop();
+            if (running) {
+                self.gameLoop();
+            }
         }, 1000/60);
     };
 
+    this.ensureStarted = function() {
+        if (!running) {
+            console.log("Starting game engine");
+
+            reset();
+
+            running = true;
+            this.gameLoop();
+        }
+    };
+
+    function stop() {
+        if (running) {
+            running = false;
+            console.log("Stopped game engine");
+        }
+    }
+
+    function reset() {
+        mousePoses = [];
+
+        gameState = {
+            blobbies: []
+        };
+
+        addFoods(100);
+    }
+
+    function addFoods(n) {
+        for (var i=0; i<n; i++) {
+            addFood();
+        }
+    }
+
+    function addFood() {
+        var foodX = Math.floor(Math.random() * worldWidth);
+        var foodY = Math.floor(Math.random() * worldHeight);
+        gameState.blobbies.push(new Blobby("food", foodX, foodY, 5, 'yellow'));
+        timeOfLastFood = new Date();
+    }
+
     function updateBlobbies() {
-        for (var i = 0; i < gameState.blobbies.length; i++) {
-            var mousePos = mousePoses[gameState.blobbies[i].id];
+        for (var i = gameState.blobbies.length - 1; i >= 0; i--) {
+            var blobby = gameState.blobbies[i];
+
+            var mousePos = mousePoses[blobby.id];
             if (mousePos != undefined) {
-                updateBlobby(mousePos, gameState.blobbies[i]);
+                updateBlobby(mousePos, blobby);
+                if (handleBlobbyOverlap(blobby, i)) {
+                    i = gameState.blobbies.length - 1;
+                    continue;
+                }
             }
         }
     }
@@ -115,26 +193,47 @@ function GameEngine() {
         }
     }
 
-    function calculateUnitVectorFromOrigin(point) {
-        return calculateUnitVector({
-            x: 0,
-            y: 0
-        }, point);
+    function handleBlobbyOverlap(blobby, blobbyIndex) {
+        for (var i = gameState.blobbies.length - 1; i >= 0; i--) {
+            var otherBlobby = gameState.blobbies[i];
+            if ((blobby.id != otherBlobby.id) && blobby.overlaps(otherBlobby)) {
+                if (blobby.size > (otherBlobby.size + minimumSizeDifferenceForEating)) {
+                    blobby.increaseSize(otherBlobby);
+                    gameState.blobbies.splice(i, 1);
+                } else if (otherBlobby.size > (blobby.size + minimumSizeDifferenceForEating)) {
+                    otherBlobby.increaseSize(blobby);
+                    gameState.blobbies.splice(blobbyIndex, 1);
+                    return true;
+                }
+            }
+        }
+        return false;
     }
+}
 
-    function calculateUnitVector(pointA, pointB) {
-        var vector = {
-            x: pointB.x - pointA.x,
-            y: pointB.y - pointA.y
-        };
+function calculateUnitVectorFromOrigin(point) {
+    return calculateUnitVector({
+        x: 0,
+        y: 0
+    }, point);
+}
 
-        var magnitude = Math.sqrt((vector.x * vector.x) + (vector.y * vector.y));
+function calculateUnitVector(pointA, pointB) {
+    var vector = {
+        x: pointB.x - pointA.x,
+        y: pointB.y - pointA.y
+    };
 
-        return {
-            x: vector.x / magnitude,
-            y: vector.y / magnitude
-        };
-    }
+    var magnitude = calculateVectorMagnitude(vector);
+
+    return {
+        x: vector.x / magnitude,
+        y: vector.y / magnitude
+    };
+}
+
+function calculateVectorMagnitude(vector) {
+    return Math.sqrt((vector.x * vector.x) + (vector.y * vector.y));
 }
 
 util.inherits(GameEngine, EventEmitter);
