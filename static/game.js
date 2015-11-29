@@ -34,6 +34,7 @@ ws.onclose =function () {
 };
 
 var canvas = document.getElementById('myCanvas');
+var sizeLabel = document.getElementById('sizeLabel');
 var context = canvas.getContext('2d');
 var centerX = canvas.width / 2;
 var centerY = canvas.height / 2;
@@ -82,6 +83,7 @@ function animate() {
             drawBlobby(gameState.me, gameState.players[i]);
         }
         drawBlobby(gameState.me, gameState.me);
+        sizeLabel.innerHTML = gameState.me.size.toFixed(1);
     }
 
     requestAnimFrame(function() {
