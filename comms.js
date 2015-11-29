@@ -9,7 +9,7 @@ module.exports = function Comms(server, engine) {
         ws.id = "player "+(nextConnectionId++);
         console.log("websocket connection "+ws.id+" open");
 
-        engine.addBlobby(ws.id);
+        engine.addPlayer(ws.id);
 
         engine.on("gameStateUpdated", function () {
             myState = engine.createMyState(ws.id);
@@ -19,7 +19,7 @@ module.exports = function Comms(server, engine) {
         });
 
         ws.on("close", function () {
-            engine.removeBlobby(ws.id);
+            engine.removePlayer(ws.id);
             console.log("websocket connection "+ws.id+" closed");
         });
 

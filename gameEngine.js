@@ -50,7 +50,8 @@ function GameEngine() {
     var mousePoses = [];
 
     var gameState = {
-        blobbies: []
+        food: [],
+        players: []
     };
 
     var running = false;
@@ -60,19 +61,19 @@ function GameEngine() {
         mousePoses[id] = newMousePos;
     };
 
-    this.addBlobby = function(id) {
+    this.addPlayer = function(id) {
         this.ensureStarted();
-        gameState.blobbies.push(new Blobby(id, 500, 500, 15, 'green'));
+        gameState.players.push(new Blobby(id, 500, 500, 15, 'green'));
     };
 
-    this.removeBlobby = function(id) {
+    this.removePlayer = function(id) {
         var numberOfPlayers = 0;
 
-        for (var i = gameState.blobbies.length - 1; i >= 0; i--) {
-            if (gameState.blobbies[i].id === id) {
-                gameState.blobbies.splice(i, 1);
+        for (var i = gameState.players.length - 1; i >= 0; i--) {
+            if (gameState.players[i].id === id) {
+                gameState.players.splice(i, 1);
             } else {
-                if (gameState.blobbies[i].isPlayer()) {
+                if (gameState.players[i].isPlayer()) {
                     numberOfPlayers++;
                 }
             }
@@ -85,15 +86,20 @@ function GameEngine() {
 
     this.createMyState = function(id) {
         var gameStateForId = {
-            blobbies: [],
-            myBlobby: null
+            food: [],
+            players: [],
+            me: null
         };
 
-        for (var i = 0; i < gameState.blobbies.length; i++) {
-            if (gameState.blobbies[i].id === id) {
-                gameStateForId.myBlobby = gameState.blobbies[i];
+        for (var i = 0; i < gameState.food.length; i++) {
+            gameStateForId.food.push(gameState.food[i]);
+        }
+
+        for (var i = 0; i < gameState.players.length; i++) {
+            if (gameState.players[i].id === id) {
+                gameStateForId.me = gameState.players[i];
             } else {
-                gameStateForId.blobbies.push(gameState.blobbies[i]);
+                gameStateForId.players.push(gameState.players[i]);
             }
         }
         return gameStateForId;
@@ -137,7 +143,8 @@ function GameEngine() {
         mousePoses = [];
 
         gameState = {
-            blobbies: []
+            food: [],
+            players: []
         };
 
         addFoods(100);
@@ -152,57 +159,67 @@ function GameEngine() {
     function addFood() {
         var foodX = Math.floor(Math.random() * worldWidth);
         var foodY = Math.floor(Math.random() * worldHeight);
-        gameState.blobbies.push(new Blobby("food", foodX, foodY, 5, 'yellow'));
+        gameState.food.push(new Blobby("food", foodX, foodY, 5, 'yellow'));
         timeOfLastFood = new Date();
     }
 
     function updateBlobbies() {
-        for (var i = gameState.blobbies.length - 1; i >= 0; i--) {
-            var blobby = gameState.blobbies[i];
+        for (var i = gameState.players.length - 1; i >= 0; i--) {
+            var player = gameState.players[i];
 
-            var mousePos = mousePoses[blobby.id];
+            var mousePos = mousePoses[player.id];
             if (mousePos != undefined) {
-                updateBlobby(mousePos, blobby);
-                if (handleBlobbyOverlap(blobby, i)) {
-                    i = gameState.blobbies.length - 1;
+                updateBlobby(mousePos, player);
+                if (handleBlobbyOverlap(player, i)) {
+                    i = gameState.players.length - 1;
                     continue;
                 }
             }
         }
     }
 
-    function updateBlobby(mousePos, blobby) {
+    function updateBlobby(mousePos, player) {
         var unitVector = calculateUnitVectorFromOrigin(mousePos);
 
-        var speed = blobby.getSpeed();
+        var speed = player.getSpeed();
         var vector = {
             x: unitVector.x * speed,
             y: unitVector.y * speed
         };
 
-        if ((mousePos.x > 5) && (blobby.x < worldWidth)) {
-            blobby.x += vector.x;
-        } else if ((mousePos.x < -5) && (blobby.x > 0)) {
-            blobby.x += vector.x;
+        if ((mousePos.x > 5) && (player.x < worldWidth)) {
+            player.x += vector.x;
+        } else if ((mousePos.x < -5) && (player.x > 0)) {
+            player.x += vector.x;
         }
 
-        if ((mousePos.y > 5) && (blobby.y < worldHeight)) {
-            blobby.y += vector.y;
-        } else if ((mousePos.y < -5) && (blobby.y > 0)) {
-            blobby.y += vector.y;
+        if ((mousePos.y > 5) && (player.y < worldHeight)) {
+            player.y += vector.y;
+        } else if ((mousePos.y < -5) && (player.y > 0)) {
+            player.y += vector.y;
         }
     }
 
-    function handleBlobbyOverlap(blobby, blobbyIndex) {
-        for (var i = gameState.blobbies.length - 1; i >= 0; i--) {
-            var otherBlobby = gameState.blobbies[i];
-            if ((blobby.id != otherBlobby.id) && blobby.overlaps(otherBlobby)) {
-                if (blobby.size > (otherBlobby.size + minimumSizeDifferenceForEating)) {
-                    blobby.increaseSize(otherBlobby);
-                    gameState.blobbies.splice(i, 1);
-                } else if (otherBlobby.size > (blobby.size + minimumSizeDifferenceForEating)) {
-                    otherBlobby.increaseSize(blobby);
-                    gameState.blobbies.splice(blobbyIndex, 1);
+    function handleBlobbyOverlap(player, playerIndex) {
+        for (var i = gameState.food.length - 1; i >= 0; i--) {
+            var food = gameState.food[i];
+            if (player.overlaps(food)) {
+                if (player.size > (food.size + minimumSizeDifferenceForEating)) {
+                    player.increaseSize(food);
+                    gameState.food.splice(i, 1);
+                }
+            }
+        }
+
+        for (var i = gameState.players.length - 1; i >= 0; i--) {
+            var otherPlayer = gameState.players[i];
+            if ((player.id != otherPlayer.id) && player.overlaps(otherPlayer)) {
+                if (player.size > (otherPlayer.size + minimumSizeDifferenceForEating)) {
+                    player.increaseSize(otherPlayer);
+                    gameState.players.splice(i, 1);
+                } else if (otherPlayer.size > (player.size + minimumSizeDifferenceForEating)) {
+                    otherPlayer.increaseSize(player);
+                    gameState.players.splice(playerIndex, 1);
                     return true;
                 }
             }

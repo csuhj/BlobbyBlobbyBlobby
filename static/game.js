@@ -55,11 +55,14 @@ function animate() {
     context.clearRect(0, 0, canvas.width, canvas.height);
 
     if (gameState != null) {
-        drawBackground(gameState.myBlobby);
-        for (var i = 0; i < gameState.blobbies.length; i++) {
-            drawBlobby(gameState.myBlobby, gameState.blobbies[i]);
+        drawBackground(gameState.me);
+        for (var i = 0; i < gameState.food.length; i++) {
+            drawBlobby(gameState.me, gameState.food[i]);
         }
-        drawBlobby(gameState.myBlobby, gameState.myBlobby);
+        for (var i = 0; i < gameState.players.length; i++) {
+            drawBlobby(gameState.me, gameState.players[i]);
+        }
+        drawBlobby(gameState.me, gameState.me);
     }
 
     requestAnimFrame(function() {
@@ -67,9 +70,9 @@ function animate() {
     });
 }
 
-function drawBlobby(myBlobby, blobby) {
-    var viewPortLeft = myBlobby.x - centerX;
-    var viewPortTop = myBlobby.y - centerY;
+function drawBlobby(me, blobby) {
+    var viewPortLeft = me.x - centerX;
+    var viewPortTop = me.y - centerY;
 
     var offsetX = blobby.x - viewPortLeft;
     var offsetY = blobby.y - viewPortTop;
@@ -97,9 +100,9 @@ function createBackgroundPattern() {
     return context.createPattern(canvasPattern,"repeat");
 }
 
-function drawBackground(myBlobby) {
-    var viewPortLeft = myBlobby.x - centerX;
-    var viewPortTop = myBlobby.y - centerY;
+function drawBackground(me) {
+    var viewPortLeft = me.x - centerX;
+    var viewPortTop = me.y - centerY;
 
     var offsetX = viewPortLeft % backgroundPatternWidth;
     var offsetY = viewPortTop % backgroundPatternHeight;
