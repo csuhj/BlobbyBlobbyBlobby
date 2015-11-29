@@ -26,9 +26,9 @@ module.exports = function Comms(server, engine) {
         });
 
         function sendGameState() {
-            myState = engine.createMyState(ws.id);
+            deltaString = engine.createMyStateDeltaString(ws.id);
 
-            ws.send(JSON.stringify(myState), function () {
+            ws.send(deltaString, function () {
             });
         }
     });

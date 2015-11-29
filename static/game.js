@@ -2,10 +2,29 @@ var host = location.origin.replace(/^http/, 'ws');
 var ws = new WebSocket(host);
 var wsOpen = false;
 
-var gameState = null;
+var gameState = {
+    food: [],
+    players: [],
+    me: null
+};
 
 ws.onmessage = function (event) {
-    gameState = JSON.parse(event.data);
+    var gameStateDelta = JSON.parse(event.data);
+
+    for (var i = 0; i < gameStateDelta.foodDelta.newFood.length; i++) {
+        gameState.food.push(gameStateDelta.foodDelta.newFood[i]);
+    }
+
+    for (var i = 0; i < gameStateDelta.foodDelta.eatenFood.length; i++) {
+        for (var j = gameState.food.length - 1; j >= 0; j--) {
+            if (gameState.food[j].id === gameStateDelta.foodDelta.eatenFood[i]) {
+                gameState.food.splice(j, 1);
+            }
+        }
+    }
+
+    gameState.players = gameStateDelta.players;
+    gameState.me = gameStateDelta.me;
 };
 ws.onopen = function () {
     wsOpen = true;
@@ -54,7 +73,7 @@ canvas.addEventListener('mousemove', function(evt) {
 function animate() {
     context.clearRect(0, 0, canvas.width, canvas.height);
 
-    if (gameState != null) {
+    if ((gameState != null) && (gameState.me != null)) {
         drawBackground(gameState.me);
         for (var i = 0; i < gameState.food.length; i++) {
             drawBlobby(gameState.me, gameState.food[i]);

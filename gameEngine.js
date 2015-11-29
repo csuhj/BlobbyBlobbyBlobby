@@ -5,6 +5,7 @@ var worldWidth = 1000;
 var worldHeight = 1000;
 var minimumSizeDifferenceForEating = 3;
 var speedMultiplier = 5;
+var nextFoodId = 0;
 
 function Blobby(id, x, y, size, colour) {
     this.id = id;
@@ -32,10 +33,6 @@ function Blobby(id, x, y, size, colour) {
         return magnitude < this.size + blobby.size;
     };
 
-    this.isPlayer = function() {
-        return id != "food";
-    };
-
     this.increaseSize = function(blobby) {
         var area = this.getArea();
         var blobbyArea = blobby.getArea();
@@ -44,11 +41,17 @@ function Blobby(id, x, y, size, colour) {
     };
 }
 
+function FoodDelta() {
+    this.newFood = [];
+    this.eatenFood = [];
+}
+
 function GameEngine() {
 
     EventEmitter.call(this);
 
     var mousePoses = [];
+    var foodDeltas = [];
 
     var gameState = {
         food: [],
@@ -65,45 +68,49 @@ function GameEngine() {
     this.addPlayer = function(id) {
         this.ensureStarted();
         gameState.players.push(new Blobby(id, 500, 500, 15, 'green'));
+
+        foodDeltas[id] = new FoodDelta();
+        for (var i = 0; i < gameState.food.length; i++) {
+            foodDeltas[id].newFood.push(gameState.food[i]);
+        }
     };
 
     this.removePlayer = function(id) {
-        var numberOfPlayers = 0;
-
         for (var i = gameState.players.length - 1; i >= 0; i--) {
             if (gameState.players[i].id === id) {
                 gameState.players.splice(i, 1);
-            } else {
-                if (gameState.players[i].isPlayer()) {
-                    numberOfPlayers++;
-                }
             }
         }
 
-        if (numberOfPlayers == 0) {
+        delete foodDeltas[id];
+
+        if (gameState.players.length == 0) {
             stop();
         }
     };
 
-    this.createMyState = function(id) {
-        var gameStateForId = {
-            food: [],
+    this.createMyStateDeltaString = function(id) {
+        var gameStateDeltaForId = {
+            foodDelta: [],
             players: [],
             me: null
         };
 
-        for (var i = 0; i < gameState.food.length; i++) {
-            gameStateForId.food.push(gameState.food[i]);
-        }
+        gameStateDeltaForId.foodDelta = foodDeltas[id];
 
         for (var i = 0; i < gameState.players.length; i++) {
             if (gameState.players[i].id === id) {
-                gameStateForId.me = gameState.players[i];
+                gameStateDeltaForId.me = gameState.players[i];
             } else {
-                gameStateForId.players.push(gameState.players[i]);
+                gameStateDeltaForId.players.push(gameState.players[i]);
             }
         }
-        return gameStateForId;
+        var string =  JSON.stringify(gameStateDeltaForId);
+
+        foodDeltas[id].newFood = [];
+        foodDeltas[id].eatenFood = [];
+
+        return string;
     };
 
     this.gameLoop = function() {
@@ -160,8 +167,26 @@ function GameEngine() {
     function addFood() {
         var foodX = Math.floor(Math.random() * worldWidth);
         var foodY = Math.floor(Math.random() * worldHeight);
-        gameState.food.push(new Blobby("food", foodX, foodY, 5, 'yellow'));
+        var food = new Blobby("food " + (nextFoodId++), foodX, foodY, 5, 'yellow');
+        gameState.food.push(food);
+        addNewFoodToDeltas(food);
         timeOfLastFood = new Date();
+    }
+
+    function addNewFoodToDeltas(food) {
+        for (var key in foodDeltas) {
+            if (foodDeltas.hasOwnProperty(key)) {
+                foodDeltas[key].newFood.push(food)
+            }
+        }
+    }
+
+    function addEatenFoodToDeltas(food) {
+        for (var key in foodDeltas) {
+            if (foodDeltas.hasOwnProperty(key)) {
+                foodDeltas[key].eatenFood.push(food.id)
+            }
+        }
     }
 
     function updateBlobbies() {
@@ -208,6 +233,7 @@ function GameEngine() {
                 if (player.size > (food.size + minimumSizeDifferenceForEating)) {
                     player.increaseSize(food);
                     gameState.food.splice(i, 1);
+                    addEatenFoodToDeltas(food);
                 }
             }
         }
