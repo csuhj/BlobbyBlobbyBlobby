@@ -4,6 +4,7 @@ var EventEmitter = require('events').EventEmitter;
 var worldWidth = 1000;
 var worldHeight = 1000;
 var minimumSizeDifferenceForEating = 3;
+var speedMultiplier = 5;
 
 function Blobby(id, x, y, size, colour) {
     this.id = id;
@@ -13,7 +14,7 @@ function Blobby(id, x, y, size, colour) {
     this.colour = colour;
 
     this.getSpeed = function() {
-        return Math.max((30 - this.size) / 5, 1);
+        return Math.max((4000 - this.getArea()) / 800, 1);
     };
 
     this.getArea = function() {
@@ -118,7 +119,7 @@ function GameEngine() {
             if (running) {
                 self.gameLoop();
             }
-        }, 1000/60);
+        }, 1000/(60 * speedMultiplier));
     };
 
     this.ensureStarted = function() {
@@ -181,7 +182,7 @@ function GameEngine() {
     function updateBlobby(mousePos, player) {
         var unitVector = calculateUnitVectorFromOrigin(mousePos);
 
-        var speed = player.getSpeed();
+        var speed = player.getSpeed() / speedMultiplier;
         var vector = {
             x: unitVector.x * speed,
             y: unitVector.y * speed

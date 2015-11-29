@@ -11,15 +11,11 @@ module.exports = function Comms(server, engine) {
 
         engine.addPlayer(ws.id);
 
-        engine.on("gameStateUpdated", function () {
-            myState = engine.createMyState(ws.id);
-
-            ws.send(JSON.stringify(myState), function () {
-            });
-        });
+        engine.on("gameStateUpdated", sendGameState);
 
         ws.on("close", function () {
             engine.removePlayer(ws.id);
+            engine.removeListener('gameStateUpdated', sendGameState);
             console.log("websocket connection "+ws.id+" closed");
         });
 
@@ -28,5 +24,12 @@ module.exports = function Comms(server, engine) {
 
             engine.updateMousePos(mousePos, ws.id);
         });
+
+        function sendGameState() {
+            myState = engine.createMyState(ws.id);
+
+            ws.send(JSON.stringify(myState), function () {
+            });
+        }
     });
 };
