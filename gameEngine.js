@@ -4,7 +4,7 @@ var EventEmitter = require('events').EventEmitter;
 var worldWidth = 1000;
 var worldHeight = 1000;
 var minimumSizeDifferenceForEating = 3;
-var speedMultiplier = 5;
+var speedMultiplier = 2;
 var nextFoodId = 0;
 
 function Blobby(id, x, y, size, colour) {
@@ -126,7 +126,7 @@ function GameEngine() {
             if (running) {
                 self.gameLoop();
             }
-        }, 1000/(60 * speedMultiplier));
+        }, 1000/(60 / speedMultiplier));
     };
 
     this.ensureStarted = function() {
@@ -207,7 +207,7 @@ function GameEngine() {
     function updateBlobby(mousePos, player) {
         var unitVector = calculateUnitVectorFromOrigin(mousePos);
 
-        var speed = player.getSpeed() / speedMultiplier;
+        var speed = player.getSpeed() * speedMultiplier;
         var vector = {
             x: unitVector.x * speed,
             y: unitVector.y * speed
@@ -217,13 +217,19 @@ function GameEngine() {
             player.x += vector.x;
         } else if ((mousePos.x < -5) && (player.x > 0)) {
             player.x += vector.x;
+        } else {
+            vector.x = 0;
         }
 
         if ((mousePos.y > 5) && (player.y < worldHeight)) {
             player.y += vector.y;
         } else if ((mousePos.y < -5) && (player.y > 0)) {
             player.y += vector.y;
+        } else {
+            vector.y = 0;
         }
+
+        player.vector = vector;
     }
 
     function handleBlobbyOverlap(player, playerIndex) {
