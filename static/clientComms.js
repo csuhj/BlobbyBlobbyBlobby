@@ -71,42 +71,6 @@ canvas.addEventListener('mousemove', function(evt) {
     }
 }, false);
 
-function animate() {
-    context.clearRect(0, 0, canvas.width, canvas.height);
-
-    if ((gameState != null) && (gameState.me != null)) {
-        drawBackground(gameState.me);
-        for (var i = 0; i < gameState.food.length; i++) {
-            drawBlobby(gameState.me, gameState.food[i]);
-        }
-        for (var i = 0; i < gameState.players.length; i++) {
-            drawBlobby(gameState.me, gameState.players[i]);
-        }
-        drawBlobby(gameState.me, gameState.me);
-        sizeLabel.innerHTML = gameState.me.size.toFixed(1);
-    }
-
-    requestAnimFrame(function() {
-        animate();
-    });
-}
-
-function drawBlobby(me, blobby) {
-    var viewPortLeft = me.x - centerX;
-    var viewPortTop = me.y - centerY;
-
-    var offsetX = blobby.x - viewPortLeft;
-    var offsetY = blobby.y - viewPortTop;
-
-    context.beginPath();
-    context.arc(offsetX, offsetY, blobby.size, 0, 2 * Math.PI, false);
-    context.fillStyle = blobby.colour;
-    context.fill();
-    context.lineWidth = 1;
-    context.strokeStyle = 'black';
-    context.stroke();
-}
-
 function createBackgroundPattern() {
     var canvasPattern = document.createElement("canvas");
     canvasPattern.width = backgroundPatternWidth;
@@ -135,6 +99,21 @@ function drawBackground(me) {
     context.fill();
 
     context.translate(offsetX, offsetY);
+}
+
+gameFrame = function () {
+}
+
+function animate() {
+    try {
+        gameFrame();
+    } catch (e) {
+        document.getElementById('errorMessages').innerHTML = e.message;
+    }
+
+    requestAnimFrame(function() {
+        animate();
+    });
 }
 
 animate();

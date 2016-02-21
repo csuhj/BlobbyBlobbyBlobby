@@ -1,7 +1,9 @@
 var express = require("express");
 var bodyParser = require("body-parser");
+
 var comms = require("./comms");
 var gameEngine = require("./gameEngine");
+var Settings = require("./model/settings");
 
 var http = require("http");
 
@@ -9,6 +11,7 @@ var app = express();
 app.use(bodyParser.json());
 
 app.use("/", require("./static"));
+app.use("/api/settings", require("./api/settings"));
 
 var portNumber = (process.env.PORT || 8080);
 

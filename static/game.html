@@ -1,17 +1,27 @@
 <!DOCTYPE HTML>
 <html>
-<head>
-    <style>
-        body {
-            margin: 0px;
-            padding: 0px;
-        }
-    </style>
-    <title>Blobby blobby blobby!</title>
-</head>
-<body>
-<canvas id="myCanvas" width="600" height="400"></canvas>
-<p>Size: <span id="sizeLabel"/></p>
-<script src="game.js"></script>
-</body>
+    <head>
+        <style>
+            body {
+                margin: 0px;
+                padding: 0px;
+            }
+        </style>
+        <title>Blobby blobby blobby!</title>
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.18/angular.js"></script>
+        <script src="clientSettings.js"></script>
+    </head>
+    <body ng-app="app">
+        <canvas id="myCanvas" width="600" height="400"></canvas>
+        <p>Size: <span id="sizeLabel"/></p>
+        <script src="clientComms.js"></script>
+<!--        <script src="clientEngine.js"></script>-->
+
+        <div ng-controller="SettingsCtrl">
+            <textarea id="rulesTextArea" rows="15" cols="65" ng-model="gameCode" ng-Change="enableUpdateRules()" ng-Keyup="enableUpdateRules()"></textarea>
+            <button ng-click="updateRules()" ng-disabled="updateRulesDisabled">Apply Code</button>
+            <button ng-click="saveSettings()">Save</button>
+            <p>{{ errorMessages }}</p>
+        </div>
+    </body>
 </html>
