@@ -22,6 +22,10 @@ angular.module('app')
                 });
         }
 
+        $scope.applyBlobbyName = function(){
+            $window.updateName($scope.blobbyname);
+        }
+
         $scope.saveSettings = function() {
             if ($scope.gameCode) {
                 SettingsSvc.save({

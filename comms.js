@@ -20,9 +20,9 @@ module.exports = function Comms(server, engine) {
         });
 
         ws.on('message', function incoming(message) {
-            var mousePos = JSON.parse(message);
+            var clientState = JSON.parse(message);
 
-            engine.updateMousePos(mousePos, ws.id);
+            engine.updateClientState(clientState, ws.id);
         });
 
         function sendGameState() {

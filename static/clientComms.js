@@ -66,8 +66,12 @@ canvas.addEventListener('mousemove', function(evt) {
         y: mousePos.y - centerY
     };
 
+    var clientState = {
+        mousePos: deltaFromCentre
+    }
+
     if (wsOpen) {
-        ws.send(JSON.stringify(deltaFromCentre));
+        ws.send(JSON.stringify(clientState));
     }
 }, false);
 
@@ -102,6 +106,16 @@ function drawBackground(me) {
 }
 
 gameFrame = function () {
+}
+
+function updateName(name) {
+    var clientState = {
+        name: name
+    }
+
+    if (wsOpen) {
+        ws.send(JSON.stringify(clientState));
+    }
 }
 
 function animate() {

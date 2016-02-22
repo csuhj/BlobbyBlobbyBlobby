@@ -7,12 +7,13 @@ var minimumSizeDifferenceForEating = 3;
 var speedMultiplier = 2;
 var nextFoodId = 0;
 
-function Blobby(id, x, y, size, colour) {
+function Blobby(id, x, y, size, colour, name) {
     this.id = id;
     this.x = x;
     this.y = y;
     this.size = size;
     this.colour = colour;
+    this.name = name;
 
     this.getSpeed = function() {
         return Math.max((4000 - this.getArea()) / 800, 1);
@@ -61,13 +62,23 @@ function GameEngine() {
     var running = false;
     var timeOfLastFood = new Date();
 
-    this.updateMousePos = function(newMousePos, id) {
-        mousePoses[id] = newMousePos;
+    this.updateClientState = function(newClientState, id) {
+        if (newClientState.mousePos != undefined) {
+            mousePoses[id] = newClientState.mousePos;
+        }
+        if (newClientState.name != undefined) {
+            for (var i = gameState.players.length - 1; i >= 0; i--) {
+                if (gameState.players[i].id === id) {
+                    gameState.players[i].name = newClientState.name;
+                    break;
+                }
+            }
+        }
     };
 
     this.addPlayer = function(id) {
         this.ensureStarted();
-        gameState.players.push(new Blobby(id, 500, 500, 15, 'green'));
+        gameState.players.push(new Blobby(id, 500, 500, 15, 'green', 'player'));
 
         foodDeltas[id] = new FoodDelta();
         for (var i = 0; i < gameState.food.length; i++) {

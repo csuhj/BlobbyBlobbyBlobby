@@ -27,5 +27,12 @@ gameFrame = function () {
         context.lineWidth = 1;
         context.strokeStyle = 'black';
         context.stroke();
+
+        if (blobby.name != undefined) {
+            context.fillStyle = 'black';
+            context.textAlign = 'center';
+            context.font='20px Georgia';
+            context.fillText(blobby.name,offsetX, offsetY);
+        }
     }
 }
