@@ -2,7 +2,7 @@ var Settings = require("../model/settings");
 var router = require("express").Router();
 
 router.get("/", function (req, res, next) {
-    Settings.find()
+    Settings.find({ username: req.query.username } )
         .limit(1)
         .sort({$natural:-1})
         .exec(function(err, settingsList) {

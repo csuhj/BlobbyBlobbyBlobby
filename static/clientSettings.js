@@ -2,8 +2,8 @@ angular.module('app', []);
 
 angular.module('app')
     .service('SettingsSvc', function($http) {
-        this.load = function() {
-            return $http.get('/api/settings');
+        this.load = function(username) {
+            return $http.get('/api/settings?username='+username);
         };
 
         this.save = function(settings) {
@@ -13,16 +13,19 @@ angular.module('app')
 
 angular.module('app')
     .controller('SettingsCtrl', function($scope, $window, SettingsSvc) {
-        SettingsSvc.load()
-            .success(function (settings) {
-                $scope.gameCode = settings[0].gameCode;
-                $scope.updateRules();
-            });
+
+        $scope.loadSettings = function() {
+            SettingsSvc.load($scope.username)
+                .success(function (settings) {
+                    $scope.gameCode = settings[0].gameCode;
+                    $scope.updateRules();
+                });
+        }
 
         $scope.saveSettings = function() {
             if ($scope.gameCode) {
                 SettingsSvc.save({
-                        username: 'csuhj',
+                        username: $scope.username,
                         gameCode: $scope.gameCode
                     });
             }

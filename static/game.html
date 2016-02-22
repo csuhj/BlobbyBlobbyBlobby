@@ -18,6 +18,7 @@
 <!--        <script src="clientEngine.js"></script>-->
 
         <div ng-controller="SettingsCtrl">
+            <span>Username: </span><input type="text" ng-model="username" /><button ng-click="loadSettings()">Load</button><br />
             <textarea id="rulesTextArea" rows="15" cols="65" ng-model="gameCode" ng-Change="enableUpdateRules()" ng-Keyup="enableUpdateRules()"></textarea>
             <button ng-click="updateRules()" ng-disabled="updateRulesDisabled">Apply Code</button>
             <button ng-click="saveSettings()">Save</button>
