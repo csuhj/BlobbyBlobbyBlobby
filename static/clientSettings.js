@@ -18,12 +18,8 @@ angular.module('app')
             SettingsSvc.load($scope.username)
                 .success(function (settings) {
                     $scope.gameCode = settings[0].gameCode;
-                    $scope.updateRules();
+                    $scope.updateGameCode();
                 });
-        }
-
-        $scope.applyBlobbyName = function(){
-            $window.updateName($scope.blobbyname);
         }
 
         $scope.saveSettings = function() {
@@ -35,21 +31,21 @@ angular.module('app')
             }
         };
 
-        $scope.updateRules = function() {
-            $scope.disableUpdateRules();
+        $scope.updateGameCode = function() {
+            $scope.disableUpdateGameCode();
             try {
                 $scope.errorMessages = "";
-                $window.gameFrame = eval("("+$scope.gameCode+")");
+                eval($scope.gameCode);
             } catch (e) {
                 $scope.errorMessages = e.message;
             }
         }
 
-        $scope.disableUpdateRules = function() {
-            $scope.updateRulesDisabled = true;
+        $scope.disableUpdateGameCode = function() {
+            $scope.updateGameCodeDisabled = true;
         }
 
-        $scope.enableUpdateRules = function() {
-            $scope.updateRulesDisabled = false;
+        $scope.enableUpdateGameCode = function() {
+            $scope.updateGameCodeDisabled = false;
         }
     });

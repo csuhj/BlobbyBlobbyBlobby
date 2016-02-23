@@ -34,10 +34,10 @@ ws.onclose =function () {
 };
 
 var canvas = document.getElementById('myCanvas');
-var sizeLabel = document.getElementById('sizeLabel');
 var context = canvas.getContext('2d');
-var centerX = canvas.width / 2;
-var centerY = canvas.height / 2;
+
+var latestMousePos = { x: 0, y: 0 };
+var lastSentMousePosRelativeToCentre = { x: 0, y: 0 };
 
 var backgroundPatternWidth = 20;
 var backgroundPatternHeight = 20;
@@ -58,21 +58,21 @@ function getMousePos(canvas, evt) {
     };
 }
 
-canvas.addEventListener('mousemove', function(evt) {
-    var mousePos = getMousePos(canvas, evt);
+function sendMousePos(mousePosRelativeToCentre) {
 
-    var deltaFromCentre = {
-        x: mousePos.x - centerX,
-        y: mousePos.y - centerY
-    };
+    if (wsOpen && (lastSentMousePosRelativeToCentre.x != mousePosRelativeToCentre.x || lastSentMousePosRelativeToCentre.y != mousePosRelativeToCentre.y)) {
+        var clientState = {
+            mousePos: mousePosRelativeToCentre
+        }
 
-    var clientState = {
-        mousePos: deltaFromCentre
-    }
-
-    if (wsOpen) {
         ws.send(JSON.stringify(clientState));
+
+        lastSentMousePosRelativeToCentre = mousePosRelativeToCentre;
     }
+}
+
+canvas.addEventListener('mousemove', function(evt) {
+    latestMousePos = getMousePos(canvas, evt);
 }, false);
 
 function createBackgroundPattern() {
@@ -90,6 +90,9 @@ function createBackgroundPattern() {
 }
 
 function drawBackground(me) {
+    var centerX = canvas.width / 2;
+    var centerY = canvas.height / 2;
+
     var viewPortLeft = me.x - centerX;
     var viewPortTop = me.y - centerY;
 

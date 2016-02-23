@@ -1,6 +1,16 @@
 gameFrame = function () {
     context.clearRect(0, 0, canvas.width, canvas.height);
 
+    var centerX = canvas.width / 2;
+    var centerY = canvas.height / 2;
+
+    var mousePosRelativeToCentre = {
+        x: latestMousePos.x - centerX,
+        y: latestMousePos.y - centerY
+    };
+
+    sendMousePos(mousePosRelativeToCentre);
+
     if ((gameState != null) && (gameState.me != null)) {
         drawBackground(gameState.me);
         for (var i = 0; i < gameState.food.length; i++) {
@@ -10,7 +20,7 @@ gameFrame = function () {
             drawBlobby(gameState.me, gameState.players[i]);
         }
         drawBlobby(gameState.me, gameState.me);
-        sizeLabel.innerHTML = gameState.me.size.toFixed(1);
+        statusLabel.innerHTML = gameState.me.size.toFixed(1);
     }
 
     function drawBlobby(me, blobby) {

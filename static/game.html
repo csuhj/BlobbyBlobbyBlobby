@@ -13,17 +13,32 @@
     </head>
     <body ng-app="app">
         <canvas id="myCanvas" width="600" height="400"></canvas>
-        <p>Size: <span id="sizeLabel"/></p>
+        <p><span id="statusLabel"/></p>
         <script src="clientComms.js"></script>
 <!--        <script src="clientEngine.js"></script>-->
 
         <div ng-controller="SettingsCtrl">
             <span>Username: </span><input type="text" ng-model="username" /><button ng-click="loadSettings()">Load</button><br />
-            <span>Blobby name: </span><input type="text" ng-model="blobbyname" /><button ng-click="applyBlobbyName()">Apply</button><br />
-            <textarea id="rulesTextArea" rows="15" cols="65" ng-model="gameCode" ng-Change="enableUpdateRules()" ng-Keyup="enableUpdateRules()"></textarea>
-            <button ng-click="updateRules()" ng-disabled="updateRulesDisabled">Apply Code</button>
+            <textarea id="rulesTextArea" rows="15" cols="65" ng-model="gameCode" ng-Change="enableUpdateGameCode()" ng-Keyup="enableUpdateGameCode()"></textarea>
+            <button ng-click="updateGameCode()" ng-disabled="updateGameCodeDisabled">Apply Code</button>
             <button ng-click="saveSettings()">Save</button>
-            <p>{{ errorMessages }}</p>
+            <p id="errorMessages" style="color: red">{{ errorMessages }}</p>
+        </div>
+        <div>
+            <p>
+                You must define a <code>gameFrame()</code> function to make anything happen on the game canvas.<br />
+                The <code>latestMousePos</code> variable holds the x and y coordinates of the mouse relative to the game canvas.<br />
+                The <code>gameState</code> variable holds lists of all the given blobbies in the game, both food and other players.
+            </p>
+            <p>The following functions and variables are also available:</p>
+            <ul>
+                <li><code>sendMousePos(position)</code>Transmit the x and y position of the mouse, relative to the centre of the game canvas.</li>
+                <li><code>drawBackground(blobby)</code>Draw the background, relative to the position of a given blobby.</li>
+                <li><code>updateName(name)</code>Set your blobby's name</li>
+                <li><code>setEnergyBarsEnabled(true|false)</code>Turn on energy bars</li>
+                <li><code>context</code>A drawing context to use to draw with</li>
+                <li><code>canvas</code>The canvas to draw on</li>
+            </ul>
         </div>
     </body>
 </html>
