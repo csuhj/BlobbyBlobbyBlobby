@@ -113,13 +113,26 @@ gameFrame = function () {
 
 function updateName(name) {
     var clientState = {
-        name: name
+        name: name,
+        isGhost: false
     }
 
     if (wsOpen) {
         ws.send(JSON.stringify(clientState));
     }
 }
+
+function updateColour(colour) {
+    var clientState = {
+        colour: colour,
+        isGhost: false
+    }
+
+    if (wsOpen) {
+        ws.send(JSON.stringify(clientState));
+    }
+}
+
 
 function animate() {
     try {

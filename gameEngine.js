@@ -7,13 +7,14 @@ var minimumSizeDifferenceForEating = 3;
 var speedMultiplier = 2;
 var nextFoodId = 0;
 
-function Blobby(id, x, y, size, colour, name) {
+function Blobby(id, x, y, size, colour, name, isGhost) {
     this.id = id;
     this.x = x;
     this.y = y;
     this.size = size;
     this.colour = colour;
     this.name = name;
+    this.isGhost = isGhost;
 
     this.getSpeed = function() {
         return Math.max((4000 - this.getArea()) / 800, 1);
@@ -25,6 +26,10 @@ function Blobby(id, x, y, size, colour, name) {
 
 
     this.overlaps = function(blobby) {
+        if (this.isGhost == true) {
+            return false;
+        }
+
         var vector = {
             x: blobby.x - this.x,
             y: blobby.y - this.y
@@ -74,11 +79,27 @@ function GameEngine() {
                 }
             }
         }
+        if (newClientState.isGhost != undefined) {
+            for (var i = gameState.players.length - 1; i >= 0; i--) {
+                if (gameState.players[i].id === id) {
+                    gameState.players[i].isGhost = newClientState.isGhost;
+                    break;
+                }
+            }
+        }
+        if (newClientState.colour != undefined) {
+            for (var i = gameState.players.length - 1; i >= 0; i--) {
+                if (gameState.players[i].id === id) {
+                    gameState.players[i].colour = newClientState.colour;
+                    break;
+                }
+            }
+        }
     };
 
     this.addPlayer = function(id) {
         this.ensureStarted();
-        gameState.players.push(new Blobby(id, 500, 500, 15, 'green', 'player'));
+        gameState.players.push(new Blobby(id, 500, 500, 15, 'green', 'player', true));
 
         foodDeltas[id] = new FoodDelta();
         for (var i = 0; i < gameState.food.length; i++) {
@@ -178,7 +199,7 @@ function GameEngine() {
     function addFood() {
         var foodX = Math.floor(Math.random() * worldWidth);
         var foodY = Math.floor(Math.random() * worldHeight);
-        var food = new Blobby("food " + (nextFoodId++), foodX, foodY, 5, 'yellow');
+        var food = new Blobby("food " + (nextFoodId++), foodX, foodY, 5, 'yellow', undefined, undefined);
         gameState.food.push(food);
         addNewFoodToDeltas(food);
         timeOfLastFood = new Date();
