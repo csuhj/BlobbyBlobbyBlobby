@@ -17,7 +17,7 @@ ws.onmessage = function (event) {
 
     for (var i = 0; i < gameStateDelta.foodDelta.eatenFood.length; i++) {
         for (var j = gameState.food.length - 1; j >= 0; j--) {
-            if (gameState.food[j].id === gameStateDelta.foodDelta.eatenFood[i]) {
+            if (gameState.food[j].playerId === gameStateDelta.foodDelta.eatenFood[i]) {
                 gameState.food.splice(j, 1);
             }
         }
@@ -38,6 +38,7 @@ var context = canvas.getContext('2d');
 
 var latestMousePos = { x: 0, y: 0 };
 var lastSentMousePosRelativeToCentre = { x: 0, y: 0 };
+var spacebarPressed = false;
 
 var backgroundPatternWidth = 20;
 var backgroundPatternHeight = 20;
@@ -71,8 +72,25 @@ function sendMousePos(mousePosRelativeToCentre) {
     }
 }
 
+function sendSpacebarPressed() {
+
+    if (wsOpen && spacebarPressed) {
+        var clientState = {
+            requestedAction: 'split'
+        }
+
+        ws.send(JSON.stringify(clientState));
+
+        spacebarPressed = false;
+    }
+}
+
 canvas.addEventListener('mousemove', function(evt) {
     latestMousePos = getMousePos(canvas, evt);
+}, false);
+
+document.body.addEventListener('keyup', function(evt) {
+    spacebarPressed = evt.keyCode == 32;
 }, false);
 
 function createBackgroundPattern() {
@@ -125,6 +143,17 @@ function updateName(name) {
 function updateColour(colour) {
     var clientState = {
         colour: colour,
+        isGhost: false
+    }
+
+    if (wsOpen) {
+        ws.send(JSON.stringify(clientState));
+    }
+}
+
+function requestSplit() {
+    var clientState = {
+        requestedAction: 'split',
         isGhost: false
     }
 

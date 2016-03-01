@@ -15,7 +15,7 @@
         <canvas id="myCanvas" width="600" height="400"></canvas>
         <p><span id="statusLabel"/></p>
         <script src="clientComms.js"></script>
-<!--        <script src="clientEngine.js"></script>-->
+        <!--<script src="clientEngine.js"></script>-->
 
         <div ng-controller="SettingsCtrl">
             <span>Username: </span><input type="text" ng-model="username" /><button ng-click="loadSettings()">Load</button><br />
@@ -23,7 +23,7 @@
             <button ng-click="updateGameCode()" ng-disabled="updateGameCodeDisabled">Apply Code</button>
             <button ng-click="saveSettings()">Save</button>
             <p id="errorMessages" style="color: red">{{ errorMessages }}</p>
-        </div>
+        </div><!--
         <div>
             <p>
                 You must define a <code>gameFrame()</code> function to make anything happen on the game canvas.<br />
@@ -39,6 +39,6 @@
                 <li><code>context</code>A drawing context to use to draw with</li>
                 <li><code>canvas</code>The canvas to draw on</li>
             </ul>
-        </div>
+        </div>-->
     </body>
 </html>

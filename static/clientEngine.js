@@ -1,4 +1,7 @@
+var setName = false;
+
 gameFrame = function () {
+
     context.clearRect(0, 0, canvas.width, canvas.height);
 
     var centerX = canvas.width / 2;
@@ -10,6 +13,7 @@ gameFrame = function () {
     };
 
     sendMousePos(mousePosRelativeToCentre);
+    sendSpacebarPressed();
 
     if ((gameState != null) && (gameState.me != null)) {
         drawBackground(gameState.me);
@@ -21,6 +25,11 @@ gameFrame = function () {
         }
         drawBlobby(gameState.me, gameState.me);
         statusLabel.innerHTML = gameState.me.size.toFixed(1);
+    }
+
+    if ((gameState != null) && (gameState.me != null) && (setName === false)) {
+        updateName('adam');
+        setName = true;
     }
 
     function drawBlobby(me, blobby) {
