@@ -126,9 +126,11 @@ function GameEngine() {
 
             //Have to search forwards in this case, as want to split the first blobby for player
             for (var i = 0; i < gameState.players.length; i++) {
-                if ((gameState.players[i].playerId === playerId) && gameState.players[i].canSplit() && mousePos != undefined) {
-                    var newBlobby = gameState.players[i].splitAndCreateNewBlobby(mousePos);
-                    gameState.players.push(newBlobby);
+                if (gameState.players[i].playerId === playerId) {
+                    if (gameState.players[i].canSplit() && mousePos != undefined) {
+                        var newBlobby = gameState.players[i].splitAndCreateNewBlobby(mousePos);
+                        gameState.players.push(newBlobby);
+                    }
                     break;
                 }
             }
