@@ -71,8 +71,6 @@ function Blobby(playerId, instanceId, x, y, size, colour, name, isGhost) {
 
         var newBlobby = new Blobby(playerId, 'instance '+new Date().getTime(), this.x + offsetVector.x, this.y + offsetVector.y, newBlobbySize, this.colour, this.name, this.isGhost)
 
-        console.log(newBlobby.instanceId);
-
         this.decreaseSize(newBlobby);
         return newBlobby;
     }
