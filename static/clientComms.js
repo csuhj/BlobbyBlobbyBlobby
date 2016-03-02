@@ -28,6 +28,7 @@ ws.onmessage = function (event) {
 };
 ws.onopen = function () {
     wsOpen = true;
+    onStartGame();
 };
 ws.onclose =function () {
     wsOpen = false;
@@ -169,6 +170,9 @@ function drawBlobby(me, blobby) {
 }
 
 gameFrame = function () {
+}
+
+onStartGame = function () {
 }
 
 function updateName(name) {
