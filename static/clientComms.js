@@ -72,6 +72,18 @@ function sendMousePos(mousePosRelativeToCentre) {
     }
 }
 
+function findAndSendMousePos() {
+    var centerX = canvas.width / 2;
+    var centerY = canvas.height / 2;
+
+    var mousePosRelativeToCentre = {
+        x: latestMousePos.x - centerX,
+        y: latestMousePos.y - centerY
+    };
+
+    sendMousePos(mousePosRelativeToCentre);
+}
+
 function sendSpacebarPressed() {
 
     if (wsOpen && spacebarPressed) {
@@ -92,6 +104,10 @@ canvas.addEventListener('mousemove', function(evt) {
 document.body.addEventListener('keyup', function(evt) {
     spacebarPressed = evt.keyCode == 32;
 }, false);
+
+function clearCanvas() {
+    context.clearRect(0, 0, canvas.width, canvas.height);
+}
 
 function createBackgroundPattern() {
     var canvasPattern = document.createElement("canvas");
@@ -126,6 +142,32 @@ function drawBackground(me) {
     context.translate(offsetX, offsetY);
 }
 
+function drawBlobby(me, blobby) {
+    var centerX = canvas.width / 2;
+    var centerY = canvas.height / 2;
+
+    var viewPortLeft = me.x - centerX;
+    var viewPortTop = me.y - centerY;
+
+    var offsetX = blobby.x - viewPortLeft;
+    var offsetY = blobby.y - viewPortTop;
+
+    context.beginPath();
+    context.arc(offsetX, offsetY, blobby.size, 0, 2 * Math.PI, false);
+    context.fillStyle = blobby.colour;
+    context.fill();
+    context.lineWidth = 1;
+    context.strokeStyle = 'black';
+    context.stroke();
+
+    if (blobby.name != undefined) {
+        context.fillStyle = 'black';
+        context.textAlign = 'center';
+        context.font='20px Georgia';
+        context.fillText(blobby.name,offsetX, offsetY);
+    }
+}
+
 gameFrame = function () {
 }
 
@@ -143,6 +185,17 @@ function updateName(name) {
 function updateColour(colour) {
     var clientState = {
         colour: colour,
+        isGhost: false
+    }
+
+    if (wsOpen) {
+        ws.send(JSON.stringify(clientState));
+    }
+}
+
+function updateSplitFraction(splitFraction) {
+    var clientState = {
+        splitFraction: splitFraction,
         isGhost: false
     }
 

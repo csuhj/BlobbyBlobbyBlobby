@@ -4,12 +4,11 @@ var EventEmitter = require('events').EventEmitter;
 var worldWidth = 1000;
 var worldHeight = 1000;
 var minimumSizeDifferenceForEating = 3;
-var maximumDistanceForMerging = 10;
 var minimumSplitSize = 10;
 var speedMultiplier = 2;
 var nextFoodId = 0;
 
-function Blobby(playerId, instanceId, x, y, size, colour, name, isGhost) {
+function Blobby(playerId, instanceId, x, y, size, colour, name, isGhost, splitFraction) {
     this.playerId = playerId;
     this.instanceId = instanceId;
     this.x = x;
@@ -18,6 +17,7 @@ function Blobby(playerId, instanceId, x, y, size, colour, name, isGhost) {
     this.colour = colour;
     this.name = name;
     this.isGhost = isGhost;
+    this.splitFraction = splitFraction;
 
     this.getSpeed = function() {
         return Math.max((4000 - this.getArea()) / 800, 1);
@@ -64,12 +64,12 @@ function Blobby(playerId, instanceId, x, y, size, colour, name, isGhost) {
     }
 
     this.splitAndCreateNewBlobby = function(mousePos) {
-        var newBlobbySize = this.size * 0.5;
+        var newBlobbySize = this.size * this.splitFraction;
 
         var unitVector = calculateUnitVectorFromOrigin(mousePos);
         var offsetVector = multiplyVectorByScalar(unitVector, this.size * 3);
 
-        var newBlobby = new Blobby(playerId, 'instance '+new Date().getTime(), this.x + offsetVector.x, this.y + offsetVector.y, newBlobbySize, this.colour, this.name, this.isGhost)
+        var newBlobby = new Blobby(playerId, 'instance '+new Date().getTime(), this.x + offsetVector.x, this.y + offsetVector.y, newBlobbySize, this.colour, this.name, this.isGhost, this.splitFraction)
 
         this.decreaseSize(newBlobby);
         return newBlobby;
@@ -121,6 +121,13 @@ function GameEngine() {
                 }
             }
         }
+        if (newClientState.splitFraction != undefined) {
+            for (var i = gameState.players.length - 1; i >= 0; i--) {
+                if (gameState.players[i].playerId === playerId) {
+                    gameState.players[i].splitFraction = newClientState.splitFraction;
+                }
+            }
+        }
         if (newClientState.requestedAction === 'split') {
             var mousePos = mousePoses[playerId];
 
@@ -139,7 +146,7 @@ function GameEngine() {
 
     this.addPlayer = function(playerId) {
         this.ensureStarted();
-        gameState.players.push(new Blobby(playerId, 'initial', 500, 500, 15, 'green', 'player', true));
+        gameState.players.push(new Blobby(playerId, 'initial', 500, 500, 15, 'green', 'player', true, 0.5));
 
         foodDeltas[playerId] = new FoodDelta();
         for (var i = 0; i < gameState.food.length; i++) {
@@ -239,7 +246,7 @@ function GameEngine() {
     function addFood() {
         var foodX = Math.floor(Math.random() * worldWidth);
         var foodY = Math.floor(Math.random() * worldHeight);
-        var food = new Blobby("food " + (nextFoodId++), 'initial', foodX, foodY, 5, 'yellow', undefined, undefined);
+        var food = new Blobby("food " + (nextFoodId++), 'initial', foodX, foodY, 5, 'yellow', undefined, undefined, 0.5);
         gameState.food.push(food);
         addNewFoodToDeltas(food);
         timeOfLastFood = new Date();
