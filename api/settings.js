@@ -1,7 +1,17 @@
 var Settings = require("../model/settings");
 var router = require("express").Router();
+var jwt = require("jwt-simple");
 
 router.get("/", function (req, res, next) {
+    if (!req.headers['x-auth']) {
+        return res.sendStatus(401);
+    }
+
+    var auth = jwt.decode(req.headers['x-auth'], "secretkey");
+    if (auth.username != req.query.username) {
+        return res.sendStatus(401);
+    }
+
     Settings.find({ username: req.query.username } )
         .limit(1)
         .sort({$natural:-1})
@@ -14,6 +24,15 @@ router.get("/", function (req, res, next) {
 });
 
 router.post("/", function (req, res, next) {
+    if (!req.headers['x-auth']) {
+        return res.sendStatus(401);
+    }
+
+    var auth = jwt.decode(req.headers['x-auth'], "secretkey");
+    if (auth.username != req.body.username) {
+        return res.sendStatus(401);
+    }
+
     var settings = new Settings({
         username: req.body.username,
         gameCode: req.body.gameCode

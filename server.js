@@ -12,6 +12,8 @@ app.use(bodyParser.json());
 
 app.use("/", require("./static"));
 app.use("/api/settings", require("./api/settings"));
+app.use("/api/sessions", require("./api/sessions"));
+app.use("/api/users", require("./api/users"));
 
 var portNumber = (process.env.PORT || 8080);
 

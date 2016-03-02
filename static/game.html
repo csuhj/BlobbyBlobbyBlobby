@@ -18,7 +18,14 @@
         <!--<script src="clientEngine.js"></script>-->
 
         <div ng-controller="SettingsCtrl">
-            <span>Username: </span><input type="text" ng-model="username" /><button ng-click="loadSettings()">Load</button><br />
+            <div ng-hide="loggedIn">
+                <form name="loginForm" ng-submit="login()">
+                    <span>Username: </span><input type="text" ng-model="username" required="required" /><span>Password: </span><input type="password" ng-model="password" required="required" /><button ng-click="login()" ng-disabled="loginForm.$invalid">Login</button><button ng-click="createUser()" ng-disabled="loginForm.$invalid">Create user</button><br />
+                </form>
+            </div>
+            <div ng-show="loggedIn">
+                <span>Username: {{ username }}</span><button ng-click="logout()">Log out</button><br />
+            </div>
             <textarea id="rulesTextArea" rows="15" cols="65" ng-model="gameCode" ng-Change="enableUpdateGameCode()" ng-Keyup="enableUpdateGameCode()"></textarea>
             <button ng-click="updateGameCode()" ng-disabled="updateGameCodeDisabled">Apply Code</button>
             <button ng-click="saveSettings()">Save</button>
